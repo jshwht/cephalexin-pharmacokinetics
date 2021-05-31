@@ -8,6 +8,11 @@ server <- function(input, output) {
     (((140 - input$age) * input$weight * as.numeric(input$sex)) / (72 * input$CsCr))
   })
   
+  
+  # Produces pharmacokinetic parameters and calculates concentration values for one individual
+  #
+  # Returns a list containing the parameters vector ("Parameters") and concentration values 
+  # vector ("Cp")
   cpcalc <- function() {
     params = rnorm(3, c(10.73, 14.32, 0), c(1.055, 1.604, 0.165))
     V = params[1]
@@ -29,6 +34,17 @@ server <- function(input, output) {
     return(pass_to_cdf)
   }
   
+
+  # Function calls cpcalc() repeatedly
+  #
+  # Generates a dataframe of concentration values for all simulated individuals 
+  #
+  # Generates a dataframe of pharmacokinetic parameters for all simulated individuals
+  #
+  # Generates a vector containing subject numbers
+  #
+  # Returns a list containing the concentration values ("plotdata"), the individual parameters ("individuals"),
+  # and the subject numbers ("sub")
   createdataframe <- function() {
     t <- c(0)
     for (i in 1:90)
@@ -48,10 +64,12 @@ server <- function(input, output) {
     df <- data.frame(Time = t, 
                      Cp = cpcols)
     df <- melt(df, "Time")
-    datalist <- list("plotdata" = df, "individuals" = ind_info, "sub" = sub)
+    datalist <- list("plotdata" = df, "merged_parameters" = ind_info, "sub" = sub)
     return(datalist)
   }
   
+  
+  # Renders the concentration plot for the UI 
   output$Cp <- renderPlot({
     finaldata = createdataframe()$plotdata
     colorvector <- c()
@@ -72,13 +90,17 @@ server <- function(input, output) {
     return(plot)
   })
   
+  
+  # Renders the table of pharmacokinetic parameters for all simulated individuals
   output$table <- renderTable({
-    tab <- createdataframe()$individuals
+    tab <- createdataframe()$merged_parameters
     tab <- cbind(createdataframe()$sub, tab)
     colnames(tab) <- c("Subject","V","Q","CL","kel","k12","k21","a","b")
     return(tab)
   })
   
+  
+  # MathJax equations and text for the "Model information" tab 
   output$model_info <- renderUI({
     withMathJax(
       helpText('$$C_p=\\frac{(k_{21}-\\alpha)D}{V(\\beta-\\alpha)}e^{-\\alpha t}\\,+\\frac{(k_{21}-\\beta)D}{V(\\alpha-\\beta)}e^{-\\beta t}$$'),
