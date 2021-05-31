@@ -71,16 +71,21 @@ server <- function(input, output) {
   
   # Renders the concentration plot for the UI 
   output$Cp <- renderPlot({
-    finaldata = createdataframe()$plotdata
     colorvector <- c()
     for (i in 1:input$sim)
     {
       colorvector <- c(colorvector, "darkblue")
     }
-    plot <- ggplot(data = finaldata, aes(x = Time, y = value, color = variable)) + 
-      geom_line() +scale_color_manual(values=c(colorvector)) + stat_summary(fun = "mean", colour = "orange", size = 1, geom = "line") +
-      labs(x = "Time (hours)", y = "Cp (mg/mL)", title = "Central compartment concentration of cephalexin after intravenous (IV) injection", subtitle = paste("CrCl = ", round(CrCl(), 0),"mL/min", sep = ""), caption = paste("N = ", input$sim, sep = "")) + 
-      theme(legend.position="none") + theme(text=element_text(size=12, face = "bold", family = "serif")) + scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
+    plot <- ggplot(data = createdataframe()$plotdata, aes(x = Time, y = value, color = variable)) + 
+      geom_line() +scale_color_manual(values=c(colorvector)) + 
+      stat_summary(fun = "mean", colour = "orange", size = 1, geom = "line") +
+      labs(x = "Time (hours)", y = "Cp (mg/mL)", 
+           title = "Central compartment concentration of cephalexin after intravenous (IV) injection", 
+           subtitle = paste("CrCl = ", round(CrCl(), 0),"mL/min", sep = ""), 
+           caption = paste("N = ", input$sim, sep = "")) + 
+      theme(legend.position="none") + 
+      theme(text=element_text(size=12, face = "bold", family = "serif")) + 
+      scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
       scale_y_continuous(expand = c(0, 0), limits = c(0, NA)) +
       theme(panel.background = element_rect(fill = "beige"),
             plot.background = element_rect(fill = "lightblue3"),
